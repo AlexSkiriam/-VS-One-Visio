@@ -9,6 +9,8 @@ using System.Diagnostics;
 using Excel = Microsoft.Office.Interop.Excel;
 using Visio = Microsoft.Office.Interop.Visio;
 using Word = Microsoft.Office.Interop.Word;
+using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace _VS_One__Visio
 {
@@ -20,33 +22,7 @@ namespace _VS_One__Visio
 
         private void CustomRibbon_Load(object sender, RibbonUIEventArgs e)
         {
-            
-        }
 
-        private void getAllPhrases_Click(object sender, RibbonControlEventArgs e)
-        {
-            application = Globals.ThisAddIn.Application;
-
-            if (application.ActivePage != null)
-            {
-                Form frm = Application.OpenForms["Phrases"];
-
-                if (frm == null)
-                {
-                    frm = new Phrases(false);
-                    frm.Visible = true;
-                    frm.Show();
-                    doc = application.ActiveDocument;
-                }
-                else if (doc == application.ActiveDocument)
-                {
-                    frm.Focus();
-                }
-            }
-            else
-            {
-                MessageBox.Show("Нет открытых страниц!");
-            }
         }
 
         private void assFileOpen_Click(object sender, RibbonControlEventArgs e)
@@ -154,8 +130,9 @@ namespace _VS_One__Visio
             }
         }
 
-        private void getIntents_Click(object sender, RibbonControlEventArgs e)
+        private void button1_Click(object sender, RibbonControlEventArgs e)
         {
+            functions = new PhrasesFunctions();
             application = Globals.ThisAddIn.Application;
 
             if (application.ActivePage != null)
@@ -174,42 +151,91 @@ namespace _VS_One__Visio
                     worksheet.Cells[1, "C"] = "target_state";
 
                     List<string> output = new List<string>();
+                    List<(string, string, string)> excelElemList = new List<(string, string, string)>();
 
-                    foreach (Visio.Shape shp in shapes)
+                    shapes.Cast<Visio.Shape>().ToList().Where(x => x.NameU.IndexOf("Dynamic connector") > -1 && !String.IsNullOrEmpty(x.Text)).ToList().ForEach(elem =>
                     {
-                        if (shp.NameU.IndexOf("Process") > -1)
+
+                        var rE = elem.GluedShapes(Visio.VisGluedShapesFlags.visGluedShapesAll2D, "", elem);
+                        foreach (var re in rE)
                         {
-                            string intent = functions.getIntentsFromShapes(shp, shapes);
-
-                            string[] intentArr = functions.splitByUpperCase(intent);
-
-                            for (int i = 0; i < intentArr.Length; i++)
+                            int ids = Convert.ToInt32(re);
+                            Visio.Shape newShape = shapes.ItemFromID[ids];
+                            if (Regex.IsMatch(newShape.Text, @"[С с]лушаем"))
                             {
-                                if (intentArr[i] != "" & intentArr[i] != " "
-                                    & intentArr[i] != "\n"
-                                    & intentArr[i] != "\\" & intentArr[i].IndexOf("<") == -1)
-                                {
-                                    output.Add(intentArr[i]);
-                                }
+                                List<string> listText = Regex.Split(elem.Text, @"(\\|\n)").Cast<string>().ToList();
+                                listText.ForEach(x => { excelElemList.Add((newShape.Text, x, "null")); });
                             }
                         }
-                    }
-
-                    var newOutput = functions.removeDuplicates(output);
+                    });
 
                     var index = 2;
-
-                    foreach (string str in newOutput)
+                    excelElemList = excelElemList.OrderBy(x => x.Item1).ToList();
+                    excelElemList.Where(x => !String.IsNullOrWhiteSpace(x.Item2)).ToList().ForEach(x =>
                     {
-                        if (str != string.Empty)
-                        {
-                            worksheet.Cells[index, "A"] = "state";
-                            worksheet.Cells[index, "B"] = str;
-                            worksheet.Cells[index, "C"] = "null";
+                        worksheet.Cells[index, "A"] = x.Item1;
+                        worksheet.Cells[index, "B"] = x.Item2;
+                        worksheet.Cells[index, "C"] = x.Item3;
 
-                            index++;
+                        index++;
+                    });
+
+                    ex.Visible = true;
+                }
+                catch
+                {
+                    MessageBox.Show("Не удалось открыть Excel!\nВозможно данная программа не установлена на Вашем компьютере.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Нет открытых страниц!");
+            }
+        }
+
+        private void button6_Click(object sender, RibbonControlEventArgs e)
+        {
+            application = Globals.ThisAddIn.Application;
+
+            if (application.ActivePage != null)
+            {
+                try
+                {
+                    Visio.Shapes shapes = application.ActivePage.Shapes;
+
+                    var ex = new Excel.Application();
+
+                    ex.Workbooks.Add();
+                    Excel._Worksheet worksheet = (Excel.Worksheet)ex.ActiveSheet;
+
+                    worksheet.Cells[1, "A"] = "selected_hypothesis";
+
+                    List<string> output = new List<string>();
+                    List<(string, string, string)> excelElemList = new List<(string, string, string)>();
+
+                    shapes.Cast<Visio.Shape>().ToList().Where(x => x.NameU.IndexOf("Dynamic connector") > -1 && !String.IsNullOrEmpty(x.Text)).ToList().ForEach(elem =>
+                    {
+
+                        var rE = elem.GluedShapes(Visio.VisGluedShapesFlags.visGluedShapesAll2D, "", elem);
+                        foreach (var re in rE)
+                        {
+                            int ids = Convert.ToInt32(re);
+                            Visio.Shape newShape = shapes.ItemFromID[ids];
+                            if (Regex.IsMatch(newShape.Text, @"[С с]лушаем"))
+                            {
+                                List<string> listText = Regex.Split(elem.Text, @"(\\|\n)").Cast<string>().ToList();
+                                listText.ForEach(x => { output.Add(x); });
+                            }
                         }
-                    }
+                    });
+
+                    var index = 2;
+                    output = output.Distinct().ToList();
+                    output.Where(x => !String.IsNullOrWhiteSpace(x)).ToList().ForEach(x =>
+                    {
+                        worksheet.Cells[index, "A"] = x;
+                        index++;
+                    });
 
                     ex.Visible = true;
                 }
@@ -246,6 +272,21 @@ namespace _VS_One__Visio
 
         private void getOnlyElaboratedPhrases_Click(object sender, RibbonControlEventArgs e)
         {
+            openPharsesForm(PhrasesMode.OnlyElaboratedPhrases);
+        }
+
+        private void getAllPhrases_Click(object sender, RibbonControlEventArgs e)
+        {
+            openPharsesForm(PhrasesMode.MainMode);
+        }
+
+        private void button5_Click(object sender, RibbonControlEventArgs e)
+        {
+            openPharsesForm(PhrasesMode.OnlyNewBlock);
+        }
+
+        private void openPharsesForm(PhrasesMode mode)
+        {
             application = Globals.ThisAddIn.Application;
 
             if (application.ActivePage != null)
@@ -254,7 +295,7 @@ namespace _VS_One__Visio
 
                 if (frm == null)
                 {
-                    frm = new Phrases(true);
+                    frm = new Phrases(mode);
                     frm.Visible = true;
                     frm.Show();
                     doc = application.ActiveDocument;
@@ -335,7 +376,10 @@ namespace _VS_One__Visio
 
             Visio.Shapes shapes = (application.ActivePage != null)? application.ActivePage.Shapes : null;
 
-            Form frm = Application.OpenForms["MainScriptBuilder"];
+            MainScriptBuilder form = new MainScriptBuilder(shapes);
+            form.Show();
+
+            /*Form frm = Application.OpenForms["MainScriptBuilder"];
 
             if (frm == null)
             {
@@ -347,7 +391,7 @@ namespace _VS_One__Visio
             else if (doc == application.ActiveDocument)
             {
                 frm.Focus();
-            }
+            }*/
             
         }
 
@@ -376,6 +420,36 @@ namespace _VS_One__Visio
             else
             {
                 MessageBox.Show("Нет открытых страниц!");
+            }
+        }
+
+        private void splitButton1_Click(object sender, RibbonControlEventArgs e)
+        {
+
+        }
+
+        private void button7_Click(object sender, RibbonControlEventArgs e)
+        {
+            application = Globals.ThisAddIn.Application;
+
+            if (application.ActivePage != null)
+            {
+                Visio.Shapes shapes = application.ActivePage.Shapes;
+                shapes.Cast<Visio.Shape>().ToList().Where(x => x.NameU.IndexOf("Process") > -1 && !String.IsNullOrEmpty(x.Text)).ToList().ForEach(elem =>
+                {
+                    if (Regex.IsMatch(elem.Text.ToLower(), @"(основная фраза:|фраза для повтора:)"))
+                    {
+                        Visio.Characters chars = elem.Characters;
+                        chars.Text = elem.Text;
+                        Regex.Matches(elem.Text.ToLower(), @"(основная фраза:|фраза для повтора:)").Cast<Match>().ToList().ForEach(x =>
+                        {
+                            int start = x.Index;
+                            chars.Begin = start;
+                            chars.End = start + x.Length;
+                            chars.CharProps[2] = (short)Visio.VisCellVals.visBold;
+                        });
+                    }
+                });
             }
         }
     }

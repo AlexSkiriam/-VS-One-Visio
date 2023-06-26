@@ -16,6 +16,8 @@ namespace _VS_One__Visio
     {
         Scintilla scintilla;
         int prevPosition = 0;
+        LanguageClass language = new LanguageClass();
+        ScintillaFunc scintillaFunc = new ScintillaFunc();
 
         public FindInScintillaForm(Scintilla source)
         {
@@ -27,7 +29,11 @@ namespace _VS_One__Visio
                 textBox1.Text = scintilla.SelectedText;
                 prevPosition = scintilla.CurrentPosition;
             }
-            
+            AutoCompleteStringCollection autoComplete = new AutoCompleteStringCollection();
+            autoComplete.AddRange(scintillaFunc.objectsInSpript(scintilla).ToArray());
+            textBox1.AutoCompleteMode = AutoCompleteMode.Suggest;
+            textBox1.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            textBox1.AutoCompleteCustomSource = autoComplete;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -95,6 +101,7 @@ namespace _VS_One__Visio
         {
             if (e.KeyCode == Keys.Enter) findInText(scintilla);
             if (e.KeyCode == Keys.Escape) Close();
+            if (e.Control && e.KeyCode == Keys.P) language.SelectedTextLanguageSwitcher(textBox1);
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)

@@ -131,73 +131,26 @@ namespace _VS_One__Visio
 
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.AutoUpgradeEnabled = true;
-            dialog.Filter = "Текстовые файлы (*.txt)|*.txt";
-            DialogResult result = dialog.ShowDialog();
-
-            string userPathValue = (result == DialogResult.OK) ? dialog.FileName : "";
-
-            if (!String.IsNullOrEmpty(userPathValue) && File.Exists(userPathValue))
-            {
-                string text = File.ReadAllText(userPathValue);
-
-                this.tabControl1.TabPages.Insert(tabControl1.TabPages.Count - 1, createNewTabWithValidate(userPathValue, text));
-                this.tabControl1.SelectedIndex = tabControl1.TabPages.Count - 2;
-            }
         }
 
         public TabPage createNewTab(string index)
         {
-            TabControlForm script = new TabControlForm();
+            //TabControlForm script = new TabControlForm();
+            NewTabBuilder newTabBuilder = new NewTabBuilder();
 
-            script.TopLevel = false;
-            script.FormBorderStyle = FormBorderStyle.None;
-            script.AutoScaleMode = AutoScaleMode.Dpi;
+            newTabBuilder.TopLevel = false;
+            newTabBuilder.FormBorderStyle = FormBorderStyle.None;
+            newTabBuilder.AutoScaleMode = AutoScaleMode.Dpi;
 
             string newIndex = (index == "0") ? "" : "_" + index;
 
             TabPage tab = new TabPage();
             tab.Text = "Новый файл" + newIndex;
 
-            tab.Controls.Add(script);
-            script.Dock = DockStyle.Fill;
+            tab.Controls.Add(newTabBuilder);
+            newTabBuilder.Dock = DockStyle.Fill;
 
-            script.Show();
-            Refresh();
-
-            return tab;
-        }
-
-        public TabPage createNewTabWithValidate(string name, string textToAdd)
-        {
-            ScriptBulder script = new ScriptBulder(allshapes);
-
-            script.TopLevel = false;
-            script.FormBorderStyle = FormBorderStyle.None;
-            script.AutoScaleMode = AutoScaleMode.Dpi;
-
-            TabPage tab = new TabPage();
-            tab.Text = name;
-
-            tab.Controls.Add(script);
-            script.Dock = DockStyle.Fill;
-
-            tab.Controls.Add(script);
-            script.Dock = DockStyle.Fill;
-
-            script.scintilla1.Text = textToAdd;
-            script.scintilla2.Text = textToAdd;
-
-            JsonParse jsonParse = new JsonParse();
-
-            var flag = jsonParse.parseJson(script.scintilla1.Text, script.scintilla1);
-            if (flag == null)
-            {
-                script.treeView1.SetObjectAsJson(JToken.Parse(jsonParse.parseConverting(script.scintilla1.Text)));
-            }
-
-            script.Show();
+            newTabBuilder.Show();
             Refresh();
 
             return tab;
@@ -206,6 +159,12 @@ namespace _VS_One__Visio
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void settingsToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            SettingsForm form = new SettingsForm();
+            form.ShowDialog();
         }
     }
 }

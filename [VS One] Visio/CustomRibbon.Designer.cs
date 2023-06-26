@@ -37,44 +37,48 @@ namespace _VS_One__Visio
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CustomRibbon));
             this.mainTab = this.Factory.CreateRibbonTab();
-            this.phrasesTab = this.Factory.CreateRibbonGroup();
+            this.group1 = this.Factory.CreateRibbonGroup();
+            this.group5 = this.Factory.CreateRibbonGroup();
+            this.group2 = this.Factory.CreateRibbonGroup();
+            this.group3 = this.Factory.CreateRibbonGroup();
+            this.group4 = this.Factory.CreateRibbonGroup();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.getPhrasesMenu = this.Factory.CreateRibbonMenu();
             this.getAllPhrases = this.Factory.CreateRibbonButton();
             this.getOnlyElaboratedPhrases = this.Factory.CreateRibbonButton();
-            this.getIntents = this.Factory.CreateRibbonButton();
-            this.button1 = this.Factory.CreateRibbonButton();
-            this.group1 = this.Factory.CreateRibbonGroup();
+            this.button5 = this.Factory.CreateRibbonButton();
             this.setLinks = this.Factory.CreateRibbonMenu();
             this.formSet = this.Factory.CreateRibbonButton();
             this.autoSet = this.Factory.CreateRibbonButton();
-            this.group5 = this.Factory.CreateRibbonGroup();
+            this.button2 = this.Factory.CreateRibbonButton();
             this.getResult = this.Factory.CreateRibbonButton();
-            this.group2 = this.Factory.CreateRibbonGroup();
             this.assFileOpen = this.Factory.CreateRibbonButton();
             this.button4 = this.Factory.CreateRibbonButton();
             this.getParametrsFromText = this.Factory.CreateRibbonButton();
             this.button3 = this.Factory.CreateRibbonButton();
-            this.group3 = this.Factory.CreateRibbonGroup();
             this.menu1 = this.Factory.CreateRibbonMenu();
             this.aboutBtn = this.Factory.CreateRibbonButton();
             this.graphMnBtn = this.Factory.CreateRibbonButton();
             this.addinMnBtn = this.Factory.CreateRibbonButton();
-            this.group4 = this.Factory.CreateRibbonGroup();
             this.update = this.Factory.CreateRibbonButton();
-            this.button2 = this.Factory.CreateRibbonButton();
+            this.menu2 = this.Factory.CreateRibbonMenu();
+            this.group6 = this.Factory.CreateRibbonGroup();
+            this.button1 = this.Factory.CreateRibbonButton();
+            this.button6 = this.Factory.CreateRibbonButton();
+            this.button7 = this.Factory.CreateRibbonButton();
             this.mainTab.SuspendLayout();
-            this.phrasesTab.SuspendLayout();
             this.group1.SuspendLayout();
             this.group5.SuspendLayout();
             this.group2.SuspendLayout();
             this.group3.SuspendLayout();
             this.group4.SuspendLayout();
+            this.group6.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainTab
             // 
             this.mainTab.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.mainTab.Groups.Add(this.phrasesTab);
+            this.mainTab.Groups.Add(this.group6);
             this.mainTab.Groups.Add(this.group1);
             this.mainTab.Groups.Add(this.group5);
             this.mainTab.Groups.Add(this.group2);
@@ -83,13 +87,39 @@ namespace _VS_One__Visio
             this.mainTab.Label = "[VS One]";
             this.mainTab.Name = "mainTab";
             // 
-            // phrasesTab
+            // group1
             // 
-            this.phrasesTab.Items.Add(this.getPhrasesMenu);
-            this.phrasesTab.Items.Add(this.getIntents);
-            this.phrasesTab.Items.Add(this.button1);
-            this.phrasesTab.Label = "Работа с фразами";
-            this.phrasesTab.Name = "phrasesTab";
+            this.group1.Items.Add(this.setLinks);
+            this.group1.Label = "Работа с ссылками";
+            this.group1.Name = "group1";
+            // 
+            // group5
+            // 
+            this.group5.Items.Add(this.getResult);
+            this.group5.Items.Add(this.button7);
+            this.group5.Label = "Работа с результатами";
+            this.group5.Name = "group5";
+            // 
+            // group2
+            // 
+            this.group2.Items.Add(this.assFileOpen);
+            this.group2.Items.Add(this.button4);
+            this.group2.Items.Add(this.getParametrsFromText);
+            this.group2.Items.Add(this.button3);
+            this.group2.Label = "Дополнительные функции";
+            this.group2.Name = "group2";
+            // 
+            // group3
+            // 
+            this.group3.Items.Add(this.menu1);
+            this.group3.Label = "Инфо";
+            this.group3.Name = "group3";
+            // 
+            // group4
+            // 
+            this.group4.Items.Add(this.update);
+            this.group4.Label = "Обновления";
+            this.group4.Name = "group4";
             // 
             // getPhrasesMenu
             // 
@@ -97,6 +127,7 @@ namespace _VS_One__Visio
             this.getPhrasesMenu.Image = ((System.Drawing.Image)(resources.GetObject("getPhrasesMenu.Image")));
             this.getPhrasesMenu.Items.Add(this.getAllPhrases);
             this.getPhrasesMenu.Items.Add(this.getOnlyElaboratedPhrases);
+            this.getPhrasesMenu.Items.Add(this.button5);
             this.getPhrasesMenu.Label = "Собрать фразы";
             this.getPhrasesMenu.Name = "getPhrasesMenu";
             this.getPhrasesMenu.ShowImage = true;
@@ -115,26 +146,12 @@ namespace _VS_One__Visio
             this.getOnlyElaboratedPhrases.ShowImage = true;
             this.getOnlyElaboratedPhrases.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.getOnlyElaboratedPhrases_Click);
             // 
-            // getIntents
+            // button5
             // 
-            this.getIntents.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.getIntents.Description = "Собирает интенты из активной страницы в файл excel";
-            this.getIntents.Image = ((System.Drawing.Image)(resources.GetObject("getIntents.Image")));
-            this.getIntents.Label = "Выгрузить интенты";
-            this.getIntents.Name = "getIntents";
-            this.getIntents.ShowImage = true;
-            this.getIntents.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.getIntents_Click);
-            // 
-            // button1
-            // 
-            this.button1.Label = "";
-            this.button1.Name = "button1";
-            // 
-            // group1
-            // 
-            this.group1.Items.Add(this.setLinks);
-            this.group1.Label = "Работа с ссылками";
-            this.group1.Name = "group1";
+            this.button5.Label = "Собрать только новые фразы";
+            this.button5.Name = "button5";
+            this.button5.ShowImage = true;
+            this.button5.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button5_Click);
             // 
             // setLinks
             // 
@@ -161,11 +178,12 @@ namespace _VS_One__Visio
             this.autoSet.ShowImage = true;
             this.autoSet.Visible = false;
             // 
-            // group5
+            // button2
             // 
-            this.group5.Items.Add(this.getResult);
-            this.group5.Label = "Работа с результатами";
-            this.group5.Name = "group5";
+            this.button2.Label = "Удалить ссылки";
+            this.button2.Name = "button2";
+            this.button2.ShowImage = true;
+            this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click_1);
             // 
             // getResult
             // 
@@ -175,15 +193,6 @@ namespace _VS_One__Visio
             this.getResult.Name = "getResult";
             this.getResult.ShowImage = true;
             this.getResult.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.getResult_Click);
-            // 
-            // group2
-            // 
-            this.group2.Items.Add(this.assFileOpen);
-            this.group2.Items.Add(this.button4);
-            this.group2.Items.Add(this.getParametrsFromText);
-            this.group2.Items.Add(this.button3);
-            this.group2.Label = "Дополнительные функции";
-            this.group2.Name = "group2";
             // 
             // assFileOpen
             // 
@@ -218,12 +227,6 @@ namespace _VS_One__Visio
             this.button3.Name = "button3";
             this.button3.ShowImage = true;
             this.button3.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button3_Click_1);
-            // 
-            // group3
-            // 
-            this.group3.Items.Add(this.menu1);
-            this.group3.Label = "Инфо";
-            this.group3.Name = "group3";
             // 
             // menu1
             // 
@@ -260,12 +263,6 @@ namespace _VS_One__Visio
             this.addinMnBtn.ShowImage = true;
             this.addinMnBtn.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.addinMnBtn_Click);
             // 
-            // group4
-            // 
-            this.group4.Items.Add(this.update);
-            this.group4.Label = "Обновления";
-            this.group4.Name = "group4";
-            // 
             // update
             // 
             this.update.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
@@ -275,12 +272,44 @@ namespace _VS_One__Visio
             this.update.ShowImage = true;
             this.update.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.update_Click);
             // 
-            // button2
+            // menu2
             // 
-            this.button2.Label = "Удалить ссылки";
-            this.button2.Name = "button2";
-            this.button2.ShowImage = true;
-            this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click_1);
+            this.menu2.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.menu2.Image = ((System.Drawing.Image)(resources.GetObject("menu2.Image")));
+            this.menu2.Items.Add(this.button1);
+            this.menu2.Items.Add(this.button6);
+            this.menu2.Label = "Выгрузить интенты";
+            this.menu2.Name = "menu2";
+            this.menu2.ShowImage = true;
+            // 
+            // group6
+            // 
+            this.group6.Items.Add(this.getPhrasesMenu);
+            this.group6.Items.Add(this.menu2);
+            this.group6.Label = "Работа с фразами";
+            this.group6.Name = "group6";
+            // 
+            // button1
+            // 
+            this.button1.Label = "Для тест-машины";
+            this.button1.Name = "button1";
+            this.button1.ShowImage = true;
+            this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button1_Click);
+            // 
+            // button6
+            // 
+            this.button6.Label = "Для статистики";
+            this.button6.Name = "button6";
+            this.button6.ShowImage = true;
+            this.button6.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button6_Click);
+            // 
+            // button7
+            // 
+            this.button7.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.button7.Label = "Формат";
+            this.button7.Name = "button7";
+            this.button7.ShowImage = true;
+            this.button7.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button7_Click);
             // 
             // CustomRibbon
             // 
@@ -290,8 +319,6 @@ namespace _VS_One__Visio
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.CustomRibbon_Load);
             this.mainTab.ResumeLayout(false);
             this.mainTab.PerformLayout();
-            this.phrasesTab.ResumeLayout(false);
-            this.phrasesTab.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
             this.group5.ResumeLayout(false);
@@ -302,6 +329,8 @@ namespace _VS_One__Visio
             this.group3.PerformLayout();
             this.group4.ResumeLayout(false);
             this.group4.PerformLayout();
+            this.group6.ResumeLayout(false);
+            this.group6.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -309,13 +338,10 @@ namespace _VS_One__Visio
         #endregion
 
         internal Microsoft.Office.Tools.Ribbon.RibbonTab mainTab;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup phrasesTab;
         internal Microsoft.Office.Tools.Ribbon.RibbonMenu getPhrasesMenu;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton getAllPhrases;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton getOnlyElaboratedPhrases;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton getIntents;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton assFileOpen;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton getResult;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group2;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group3;
@@ -334,6 +360,13 @@ namespace _VS_One__Visio
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button4;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button3;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
+        private System.Windows.Forms.ColorDialog colorDialog1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button5;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group6;
+        internal Microsoft.Office.Tools.Ribbon.RibbonMenu menu2;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button6;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button7;
     }
 
     partial class ThisRibbonCollection

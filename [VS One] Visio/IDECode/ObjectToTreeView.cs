@@ -14,7 +14,7 @@ namespace _VS_One__Visio
             public int Inc() => _n++;
         }
 
-        private static void FillTreeView(TreeNode node, JToken tok, Stack<IndexContainer> s)
+        private static void FillTreeView(TreeNode node, JToken tok, Stack<IndexContainer> s, bool getOnlyPhrasesTree = false)
         {
             if (tok.Type == JTokenType.Object)
             {
@@ -69,7 +69,7 @@ namespace _VS_One__Visio
             }
         }
 
-        public static void SetObjectAsJson<T>(this TreeView tv, T obj)
+        public static void SetObjectAsJson<T>(this TreeView tv, T obj, bool getOnlyPhrasesTree = false)
         {
             tv.BeginUpdate();
             try

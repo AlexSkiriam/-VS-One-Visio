@@ -46,40 +46,81 @@ namespace _VS_One__Visio
 
         public void uiUpdate(object sender, UpdateUIEventArgs e, int lastCaretPos)
         {
-            Scintilla scintilla = (Scintilla)sender;
-
-            var caretPos = scintilla.CurrentPosition;
-            if (lastCaretPos != caretPos)
+            try
             {
-                lastCaretPos = caretPos;
-                var bracePos1 = -1;
-                var bracePos2 = -1;
+                Scintilla scintilla = (Scintilla)sender;
 
-                if (caretPos > 0 && IsBrace(scintilla.GetCharAt(caretPos - 1)))
-                    bracePos1 = (caretPos - 1);
-                else if (IsBrace(scintilla.GetCharAt(caretPos)))
-                    bracePos1 = caretPos;
-
-                if (bracePos1 >= 0)
+                var caretPos = scintilla.CurrentPosition;
+                if (lastCaretPos != caretPos)
                 {
-                    bracePos2 = scintilla.BraceMatch(bracePos1);
-                    if (bracePos2 == Scintilla.InvalidPosition)
+                    lastCaretPos = caretPos;
+                    var bracePos1 = -1;
+                    var bracePos2 = -1;
+
+                    if (caretPos > 0 && IsBrace(scintilla.GetCharAt(caretPos - 1)))
+                        bracePos1 = (caretPos - 1);
+                    else if (IsBrace(scintilla.GetCharAt(caretPos)))
+                        bracePos1 = caretPos;
+
+                    if (bracePos1 >= 0)
                     {
-                        scintilla.BraceBadLight(bracePos1);
-                        scintilla.HighlightGuide = 0;
+                        bracePos2 = scintilla.BraceMatch(bracePos1);
+                        if (bracePos2 == Scintilla.InvalidPosition)
+                        {
+                            scintilla.BraceBadLight(bracePos1);
+                            scintilla.HighlightGuide = 0;
+                        }
+                        else
+                        {
+                            scintilla.BraceHighlight(bracePos1, bracePos2);
+                            scintilla.HighlightGuide = scintilla.GetColumn(bracePos1);
+                        }
                     }
                     else
                     {
-                        scintilla.BraceHighlight(bracePos1, bracePos2);
-                        scintilla.HighlightGuide = scintilla.GetColumn(bracePos1);
+                        scintilla.BraceHighlight(Scintilla.InvalidPosition, Scintilla.InvalidPosition);
+                        scintilla.HighlightGuide = 0;
                     }
                 }
-                else
-                {
-                    scintilla.BraceHighlight(Scintilla.InvalidPosition, Scintilla.InvalidPosition);
-                    scintilla.HighlightGuide = 0;
-                }
             }
+            catch
+            {
+
+            }
+        }
+
+        public int findTextInScintilla(Scintilla scintilla, string textToFind, int prevPosition)
+        {
+            int currentPosition = 0;
+
+            string text = scintilla.Text.ToLower();
+            string findText = textToFind.ToLower();
+
+            currentPosition = text.IndexOf(findText, prevPosition);
+
+            int pos = 0;
+
+            if (currentPosition > 0)
+            {
+                scintilla.GotoPosition(currentPosition);
+                scintilla.SetSelection(currentPosition, currentPosition + textToFind.Length);
+                scintilla.Show();
+                pos = currentPosition + textToFind.Length;
+            }
+            else
+            {
+                MessageBox.Show("Найден последний элемент!");
+                pos = 0;
+            }
+
+            return pos;
+        }
+
+        public List<string> objectsInSpript(Scintilla scintilla)
+        {
+            List<string> list = new List<string>();
+            list.AddRange(Regex.Matches(scintilla.Text, @"(?<=""\w*_state""\s*\:\s*"")[^""]+(?="")").Cast<Match>().Select(m => m.Value).ToList());
+            return list;
         }
 
         public string storeBuilder(Scintilla scintilla, List<string> list)
@@ -100,19 +141,26 @@ namespace _VS_One__Visio
                     {
                         store += "public " + ((JValue)((JProperty)tok).Value.SelectToken("type")).Value + " " + ((JProperty)tok).Name + " { get; set; }\n";
                     }
-                    if (((JProperty)tok).Value.SelectToken("collection_type") != null
+                    try
+                    {
+                        if (((JProperty)tok).Value.SelectToken("collection_type") != null
                         && ((JValue)((JProperty)tok).Value.SelectToken("element_type") != null
                             || ((JValue)((JProperty)tok).Value.SelectToken("key_type") != null && (JValue)((JProperty)tok).Value.SelectToken("value_type") != null)))
+                        {
+                            string types =
+                                ((JValue)((JProperty)tok).Value.SelectToken("element_type") != null) ?
+                                    $"<{(JValue)((JProperty)tok).Value.SelectToken("element_type")}>"
+                                    : $"<{(JValue)((JProperty)tok).Value.SelectToken("key_type")},{(JValue)((JProperty)tok).Value.SelectToken("value_type")}>";
+                            store += "public "
+                                + ((JValue)((JProperty)tok).Value.SelectToken("collection_type")).Value
+                                + types + " "
+                                + ((JProperty)tok).Name
+                                + " { get; set; }\n";
+                        }
+                    }
+                    catch
                     {
-                        string types =
-                            ((JValue)((JProperty)tok).Value.SelectToken("element_type") != null) ?
-                                $"<{(JValue)((JProperty)tok).Value.SelectToken("element_type")}>"
-                                : $"<{(JValue)((JProperty)tok).Value.SelectToken("key_type")},{(JValue)((JProperty)tok).Value.SelectToken("value_type")}>";
-                        store += "public "
-                            + ((JValue)((JProperty)tok).Value.SelectToken("collection_type")).Value
-                            + types + " "
-                            + ((JProperty)tok).Name
-                            + " { get; set; }\n";
+
                     }
                 }
             }
@@ -242,13 +290,47 @@ namespace _VS_One__Visio
                     if (charNextIsCharOrString) return;
                     scintilla.InsertText(caretPos, ")");
                     break;
+                case ')':
+                    if (charPrev == 0x28 && charNext == 0x29)
+                    {
+                        scintilla.DeleteRange(caretPos, 1);
+                        scintilla.GotoPosition(caretPos);
+                        return;
+                    }
+
+                    /*if (isCharOrString)
+                        scintilla.InsertText(caretPos, ")");*/
+                    break;
                 case '{':
                     if (charNextIsCharOrString) return;
                     scintilla.InsertText(caretPos, "}");
                     break;
+                case '}':
+                    if (charPrev == 0x7b && charNext == 0x7d)
+                    {
+                        scintilla.DeleteRange(caretPos, 1);
+                        scintilla.GotoPosition(caretPos);
+                        return;
+                    }
+
+                    /*if (isCharOrString)
+                        scintilla.InsertText(caretPos, "}");*/
+                    break;
                 case '[':
                     if (charNextIsCharOrString) return;
                     scintilla.InsertText(caretPos, "]");
+                    break;
+                case ']':
+
+                    if (charPrev == 0x5b && charNext == 0x5d)
+                    {
+                        scintilla.DeleteRange(caretPos, 1);
+                        scintilla.GotoPosition(caretPos);
+                        return;
+                    }
+
+                    /*if (isCharOrString)
+                        scintilla.InsertText(caretPos, "]");*/
                     break;
                 case '"':
                     // 0x22 = "

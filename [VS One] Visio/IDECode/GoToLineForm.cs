@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ScintillaNET;
+using System;
 using System.Windows.Forms;
-using ScintillaNET;
 
 namespace _VS_One__Visio
 {
@@ -21,11 +14,27 @@ namespace _VS_One__Visio
 
             scintilla = source;
             label1.Text = $"Количество строк: {scintilla.Lines.Count}";
+            this.ActiveControl = numericUpDown1;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            goTo();
+        }
+
+        public void goTo()
+        {
             scintilla.Lines[Convert.ToInt32(numericUpDown1.Value)].Goto();
+        }
+
+        private void GoToLineForm_Load(object sender, EventArgs e)
+        {
+            numericUpDown1.Focus();
+        }
+
+        private void GoToLineForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter) goTo();
         }
     }
 }

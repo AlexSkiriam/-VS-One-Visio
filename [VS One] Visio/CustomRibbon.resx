@@ -514,7 +514,7 @@
         /08NRXOFq49lAAAAAElFTkSuQmCC
 </value>
   </data>
-  <data name="getIntents.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="menu2.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAQQAAAEECAYAAADOCEoKAAAABGdBTUEAALGPC/xhBQAAE3RJREFUeF7t
         nYmbHGW1h/lT/HuuV1EQWQTlqqggiwiiiIga1xiCQGJIQsxCMiEJWSf7ZN+3mez7IkpISICEQNgJ3+3f
@@ -3660,4 +3660,7 @@
         AABJRU5ErkJggg==
 </value>
   </data>
+  <metadata name="colorDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
 </root>

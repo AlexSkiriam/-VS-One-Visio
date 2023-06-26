@@ -75,10 +75,13 @@ namespace _VS_One__Visio
             this.Controls.Add(this.label1);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.button1);
+            this.KeyPreview = true;
             this.MaximumSize = new System.Drawing.Size(390, 110);
             this.MinimumSize = new System.Drawing.Size(390, 110);
             this.Name = "GoToLineForm";
             this.Text = "Перейти к строке";
+            this.Load += new System.EventHandler(this.GoToLineForm_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GoToLineForm_KeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

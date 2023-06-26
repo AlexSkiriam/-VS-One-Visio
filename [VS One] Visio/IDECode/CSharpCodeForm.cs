@@ -12,13 +12,16 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ScintillaNET;
+using System.Reflection;
+using Microsoft.CSharp;
 
 namespace _VS_One__Visio
 {
     public partial class CSharpCodeForm : Form
     {
+        LanguageClass language = new LanguageClass();
         int lastCaretPos = 0;
-        TextEditorForm editor;
+        NewTextEditorForm editor;
 
         string storeElements = "";
         string typesElements = "";
@@ -29,7 +32,7 @@ namespace _VS_One__Visio
         public static List<string> autoCompleteStore = new List<string>();
         public static List<string> autoCompleteTypes = new List<string>();
 
-        public CSharpCodeForm(TextEditorForm source, string classValue, string typesValue, List<string> listStore, List<string> listTypes)
+        public CSharpCodeForm(NewTextEditorForm source, string classValue, string typesValue, List<string> listStore, List<string> listTypes)
         {
             InitializeComponent();
 
@@ -67,6 +70,13 @@ namespace _VS_One__Visio
         private void Scintilla1_UpdateUI(object sender, ScintillaNET.UpdateUIEventArgs e)
         {
             scinitillaFunc.uiUpdate(sender, e, lastCaretPos);
+            if ((e.Change & UpdateChange.Selection) > 0)
+            {
+                var currentPos = scintilla1.CurrentPosition;
+                var currentLinePos = scintilla1.LineFromPosition(currentPos) + 1;
+                var linePosition = currentPos - scintilla1.Lines[scintilla1.LineFromPosition(currentPos)].Position;
+                toolStripStatusLabel1.Text = "Строка: " + currentLinePos + " Позиция: " + (linePosition + 1);
+            }
         }
 
         private void scintilla1_KeyDown(object sender, KeyEventArgs e)
@@ -96,35 +106,38 @@ namespace _VS_One__Visio
             string mainText = "Сборка:\n";
             string Output = "Out.exe";
 
-            CodeDomProvider provider = CodeDomProvider.CreateProvider("CSharp");
-
-            CompilerParameters parameters = new CompilerParameters();
-            parameters.GenerateExecutable = true;
-            parameters.OutputAssembly = Output;
-            parameters.ReferencedAssemblies.Add("System.dll");
-            CompilerResults results = provider.CompileAssemblyFromSource(parameters, codeToCompile(scintilla1.Text, storeElements, typesElements));
-
-            if (results.Errors.Count > 0)
+            var CSHarpProvider = CSharpCodeProvider.CreateProvider("CSharp");
+            CompilerParameters compilerParams = new CompilerParameters()
             {
-                string errorText = "";
-                foreach (CompilerError CompErr in results.Errors)
-                {
-                    string windowLine = Convert.ToString(Convert.ToInt32(CompErr.Line) - 10);
+                GenerateExecutable = false,
+                GenerateInMemory = true,
+            };
+            compilerParams.ReferencedAssemblies.AddRange(new string[]
+            {
+                "System.dll",
+                "System.Core.dll",
+                "System.Net.dll",
+            });
+            CompilerResults compilerResult = CSHarpProvider.CompileAssemblyFromSource(compilerParams, sourceCode(scintilla1.Text));
 
-                    errorText = errorText +
-                                "Строка " + windowLine +
-                                ", Код ошибки: " + CompErr.ErrorNumber +
-                                ", '" + CompErr.ErrorText + "';" +
-                                Environment.NewLine + Environment.NewLine;
+            if (compilerResult.Errors.Count == 0)
+            {
+                richTextBox1.Text += mainText;
+                try
+                {
+                    string r = compilerResult.CompiledAssembly.GetType("VoiceRobot.Program").GetMethod("Main").Invoke(null, null).ToString();
+                    richTextBox1.Text += "========== Успешно ==========\n";
+                    richTextBox1.Text += r;
                 }
-                //MessageBox.Show(errorText);
-                richTextBox1.Text += mainText + "========== С ошибками ==========\n" + errorText;
+                catch (Exception e)
+                {
+                    richTextBox1.Text += e.InnerException.Message + "rn" + e.InnerException.StackTrace;
+                }
             }
             else
             {
-                //MessageBox.Show("Успешно");
-                richTextBox1.Text += mainText + "========== Успешно ==========";
-                if (needRunCode) Process.Start(Output);
+                foreach (var oline in compilerResult.Output)
+                    richTextBox1.Text += oline;
             }
         }
 
@@ -150,6 +163,29 @@ namespace _VS_One__Visio
                             + store +
                         @"}
                     }";
+        }
+
+        private string sourceCode(string usercode)
+        {
+            return @"using System;
+                using System.IO;
+                using System.Net;
+                using System.Threading;
+                using System.Linq;
+                using System.Text.RegularExpressions;
+                using System.Collections.Generic;
+
+                namespace VoiceRobot
+                {
+                    public class Program
+                    {
+                        public static void Main()
+                        {
+                            "
+                            + usercode + @"
+                        }
+                    }
+                }";
         }
 
         /* Keywords */
@@ -205,6 +241,11 @@ namespace _VS_One__Visio
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private void scintilla1_KeyDown_1(object sender, KeyEventArgs e)
+        {
+            if(e.Control && e.KeyCode == Keys.P) language.SelectedTextLanguageSwitcher(scintilla1);
         }
     }
 }

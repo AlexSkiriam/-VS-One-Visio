@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ScintillaNET;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace _VS_One__Visio
 {
@@ -17,10 +18,16 @@ namespace _VS_One__Visio
     {
         TextEditorForm firstContainer;
         TextEditorForm secondContainer;
+        TextEditorForm rOContainer;
+        TextEditorForm rSContainer;
+        TextEditorForm rOContainer1;
+        TextEditorForm rSContainer1;
         NewBuilderForm thirdContainer;
         AllShapesForm fourthContainer;
         NewResultBuilderForm fiveContainer;
         VisioViewerForm sixContainer;
+
+        private bool UseDocument = Properties.Settings.Default.UseDocument;
 
         ScintillaFunc scintillaFunc = new ScintillaFunc();
 
@@ -30,15 +37,42 @@ namespace _VS_One__Visio
 
             firstContainer = getForm();
             secondContainer = getForm();
+            //
+            rOContainer = getForm();
+            rSContainer = getForm();
+            rOContainer1 = getForm();
+            rSContainer1 = getForm();
+            //
             sixContainer = getVisioViewer();
 
             tabPage7.Controls.Add(firstContainer);
             firstContainer.Show();
             tabPage5.Controls.Add(secondContainer);
             secondContainer.Show();
+            //
+            splitContainer3.Panel1.Controls.Add(rOContainer);
+            rOContainer.Show();
+            splitContainer3.Panel2.Controls.Add(rSContainer);
+            rSContainer.Show();
+            splitContainer4.Panel1.Controls.Add(rOContainer1);
+            rOContainer1.Show();
+            splitContainer4.Panel2.Controls.Add(rSContainer1);
+            rSContainer1.Show();
+            //
+
+            //rOContainer.splitContainer1.Panel1Collapsed = true;
+            rSContainer.splitContainer1.Panel1Collapsed = true;
+            rSContainer1.splitContainer1.Panel1Collapsed = true;
+
+            firstContainer.otherScintilla = secondContainer.scintilla1;
+            secondContainer.otherScintilla = firstContainer.scintilla1;
 
             tabPage6.Controls.Add(sixContainer);
             sixContainer.Show();
+
+            label1.Text = "";
+            label1.BackColor = Color.White;
+            tableLayoutPanel2.BackColor = Color.White;
 
             if (Globals.ThisAddIn.Application.ActivePage != null)
             {
@@ -66,7 +100,30 @@ namespace _VS_One__Visio
             secondContainer.scintilla1.KeyDown += Scintilla1_KeyDown1;
             secondContainer.splitContainer1.SplitterMoved += secondContainerScriptObjects_SplitterMoved;
 
+            rOContainer.scintilla1.KeyDown += Scintilla1_KeyDown2;
+            rOContainer.splitContainer1.SplitterMoved += rSO_SplitterMoved;
+            rSContainer.scintilla1.KeyDown += Scintilla1_KeyDown3;
+            rSContainer.splitContainer1.SplitterMoved += rSC_SplitterMoved;
+            splitContainer3.SplitterMoved += SplitterMovedForF;
+
+            rOContainer1.scintilla1.KeyDown += Scintilla1_KeyDown4;
+            rOContainer1.splitContainer1.SplitterMoved += rSO1_SplitterMoved;
+            rSContainer1.scintilla1.KeyDown += Scintilla1_KeyDown5;
+            rSContainer1.splitContainer1.SplitterMoved += rSC1_SplitterMoved;
+            splitContainer4.SplitterMoved += SplitterMovedForS;
+
             secondContainer.scintilla1.Document = firstContainer.scintilla1.Document;
+
+            if(UseDocument)
+            {
+                rOContainer.scintilla1.Document = firstContainer.scintilla1.Document;
+                rSContainer.scintilla1.Document = firstContainer.scintilla1.Document;
+                rOContainer1.scintilla1.Document = firstContainer.scintilla1.Document;
+                rSContainer1.scintilla1.Document = firstContainer.scintilla1.Document;
+
+                rOContainer.otherScintilla = rSContainer.scintilla1;
+                rOContainer1.otherScintilla = rSContainer1.scintilla1;
+            }
 
             sixContainer.splitContainer1.SplitterMoved += sixContainerGraph_SplitterMoved;
             sixContainer.splitContainer2.SplitterDistance = firstContainer.splitContainer1.SplitterDistance;
@@ -78,9 +135,11 @@ namespace _VS_One__Visio
         {
             if (listView2.FocusedItem != null && listView2.FocusedItem.Bounds.Contains(e.Location) == true)
             {
-                MessageBox.Show(listView2.FocusedItem.SubItems[2].Text);
+                //MessageBox.Show(listView2.FocusedItem.SubItems[2].Text);
                 string[] positions = listView2.FocusedItem.SubItems[1].Text.Split('_');
                 firstContainer.scintilla1.ScrollRange(Convert.ToInt32(positions[0]), Convert.ToInt32(positions[0]));
+                BasicPhraseBuldier basic = new BasicPhraseBuldier(listView2.FocusedItem.SubItems[2].Text);
+                basic.ShowDialog();
             }
         }
 
@@ -105,14 +164,68 @@ namespace _VS_One__Visio
             }
         }
 
+        private void SplitterMovedForF(object sender, SplitterEventArgs e)
+        {
+            if (!splitContainer4.Focused) splitContainer4.SplitterDistance = splitContainer3.SplitterDistance;
+        }
+
+        private void rSO_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            if (!rSContainer1.Focused) rOContainer1.splitContainer1.SplitterDistance = rOContainer.splitContainer1.SplitterDistance;
+        }
+
+        private void rSC_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            if (!rSContainer1.Focused) rSContainer1.splitContainer1.SplitterDistance = rSContainer.splitContainer1.SplitterDistance;
+        }
+
+        private void SplitterMovedForS(object sender, SplitterEventArgs e)
+        {
+            if (!splitContainer3.Focused) splitContainer3.SplitterDistance = splitContainer4.SplitterDistance;
+        }
+
+        private void rSO1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            if (!rSContainer.Focused) rOContainer.splitContainer1.SplitterDistance = rOContainer1.splitContainer1.SplitterDistance;
+        }
+
+        private void rSC1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            if (!rSContainer.Focused) rSContainer.splitContainer1.SplitterDistance = rSContainer1.splitContainer1.SplitterDistance;
+        }
+
         private void Scintilla1_KeyDown(object sender, KeyEventArgs e)
         {
+            label1.BackColor = Color.White;
+            label1.Text = "";
             keysEvents(e, firstContainer, firstContainer.scintilla1);
         }
 
         private void Scintilla1_KeyDown1(object sender, KeyEventArgs e)
         {
+            label1.BackColor = Color.White;
+            label1.Text = "";
             keysEvents(e, secondContainer, secondContainer.scintilla1);
+        }
+
+        private void Scintilla1_KeyDown2(object sender, KeyEventArgs e)
+        {
+            keysEvents(e, rOContainer, rOContainer.scintilla1);
+        }
+
+        private void Scintilla1_KeyDown3(object sender, KeyEventArgs e)
+        {
+            keysEvents(e, rSContainer, rSContainer.scintilla1);
+        }
+
+        private void Scintilla1_KeyDown4(object sender, KeyEventArgs e)
+        {
+            keysEvents(e, rOContainer1, rOContainer1.scintilla1);
+        }
+
+        private void Scintilla1_KeyDown5(object sender, KeyEventArgs e)
+        {
+            keysEvents(e, rSContainer1, rSContainer1.scintilla1);
         }
 
         public string documentPath = "";
@@ -122,7 +235,11 @@ namespace _VS_One__Visio
             if (e.Control && e.KeyCode == Keys.S)
             {
                 validateEvent();
-                if (e.Shift) form.savingEvent(documentPath); 
+                if (e.Shift)
+                {
+                    form.savingEvent(documentPath);
+                    label1.Text = "Сохранено в файл";
+                }
             }
             if (e.Control && e.KeyCode == Keys.O)
             {
@@ -136,6 +253,7 @@ namespace _VS_One__Visio
                 if (frm == null)
                 {
                     frm = new FindInScintillaForm(scintilla);
+                    frm.Owner = this;
                     frm.Visible = true;
                     frm.Show();
                 }
@@ -151,6 +269,7 @@ namespace _VS_One__Visio
                 if (frm == null)
                 {
                     frm = new GoToLineForm(scintilla);
+                    frm.Owner = this;
                     frm.Visible = true;
                     frm.Show();
                 }
@@ -159,39 +278,78 @@ namespace _VS_One__Visio
                     frm.Focus();
                 }
             }
+            if (e.Control && e.KeyCode == Keys.P)
+            {
+                form.changeLanguage();
+            }
+            if (e.KeyCode == Keys.F12)
+            {
+                if (e.Alt) form.findStore(form.otherScintilla);
+                else form.findStore(form.scintilla1);
+            }
+            
         }
 
         JsonParse parser = new JsonParse();
 
         public void validateEvent()
         {
+            listView2.Items.Clear();
             sixContainer.textEditor = firstContainer;
-            var log = parser.parseJson(firstContainer.scintilla1.Text, firstContainer.scintilla1);
-            if (log == null)
+            var logs = parser.parseScript(firstContainer.scintilla1.Text, firstContainer.scintilla1);
+            if (logs.Count() == 0)
             {
-                listView2.Items.Clear();
-                textBox1.BackColor = SystemColors.Control;
-                textBox1.Text = "";
-                firstContainer.treeView1.SetObjectAsJson(JToken.Parse(parser.parseConverting(firstContainer.scintilla1.Text)));
-                firstContainer.treeView1.Nodes[0].Expand();
-                firstContainer.storeStringClass = scintillaFunc.storeBuilder(firstContainer.scintilla1, firstContainer.autoCompliteStore);
-                firstContainer.typesStringClass = scintillaFunc.userTypeBuilder(firstContainer.scintilla1, firstContainer.autoCompliteTypes);
+                ScinitillaStyles scinitillaStyles = new ScinitillaStyles();
 
-                //secondContainer.treeView1.SetObjectAsJson(JToken.Parse(scintillaFunc.getOnlyPhraseObjects(parser.parseConverting(firstContainer.scintilla1.Text))));
-                secondContainer.treeView1.SetObjectAsJson(JToken.Parse(parser.parseConverting(secondContainer.scintilla1.Text)));
-                secondContainer.treeView1.Nodes[0].Expand();
-                secondContainer.storeStringClass = scintillaFunc.storeBuilder(secondContainer.scintilla1, secondContainer.autoCompliteStore);
-                secondContainer.typesStringClass = scintillaFunc.userTypeBuilder(secondContainer.scintilla1, secondContainer.autoCompliteTypes);
+                listView2.Items.Clear();
+                label1.Text = "Сохранено локально";
+                label1.BackColor = Color.Green;
+
+                afterValidate(firstContainer);
+                afterValidate(secondContainer);
+
+                if(UseDocument)
+                {
+                    afterValidate(rOContainer);
+                    afterValidate(rSContainer);
+                    afterValidate(rOContainer1);
+                    afterValidate(rSContainer1);
+                }
+
+                sixContainer.textEditor = firstContainer;
+
+                List<string> states = new List<string>();
+
+                foreach (Match match in Regex.Matches(firstContainer.scintilla1.Text, @"(?<=""name""\s*\:\s*"")[^""]+(?="")"))
+                {
+                    if (!states.Contains(match.Value)) states.Add(match.Value);
+                }
+
+                sixContainer.statesInScript = states;
             }
             else
             {
-                ListViewItem item = new ListViewItem("0-80X08e");
-                item.SubItems.Add(log.start + "_" + log.end);
-                item.SubItems.Add(log.message);
-                listView2.Items.Add(item);
-                textBox1.Text = "В скрипте имеются ошибки";
-                textBox1.BackColor = Color.Red;
+                logs.ForEach(log =>
+                {
+                    ListViewItem item = new ListViewItem("0-80X08e");
+                    item.SubItems.Add(log.start + "_" + log.end);
+                    item.SubItems.Add(log.message);
+                    listView2.Items.Add(item);
+                });
+                label1.Text = "В скрипте имеются ошибки";
+                label1.BackColor = Color.Red;
             }
+        }
+
+        private void afterValidate(TextEditorForm form)
+        {
+            ScinitillaStyles scinitillaStyles = new ScinitillaStyles();
+
+            form.treeView1.SetObjectAsJson(JToken.Parse(parser.parseConverting(form.scintilla1.Text)));
+            form.treeView1.Nodes[0].Expand();
+            form.storeStringClass = scintillaFunc.storeBuilder(form.scintilla1, form.autoCompliteStore);
+            form.typesStringClass = scintillaFunc.userTypeBuilder(form.scintilla1, form.autoCompliteTypes);
+            scinitillaStyles.setLinks(form.scintilla1);
         }
 
         private TextEditorForm getForm()
@@ -252,6 +410,20 @@ namespace _VS_One__Visio
             script.Dock = DockStyle.Fill;
 
             return script;
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if(checkBox1.Checked)
+            {
+                checkBox1.Text = "V";
+                splitContainer1.Orientation = Orientation.Vertical;
+            }
+            else
+            {
+                checkBox1.Text = "H";
+                splitContainer1.Orientation = Orientation.Horizontal;
+            }
         }
     }
 }

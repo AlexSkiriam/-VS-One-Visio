@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using Visio = Microsoft.Office.Interop.Visio;
 
@@ -10,13 +7,33 @@ namespace _VS_One__Visio
 {
     class PhrasesFunctions
     {
-        public List<PhrasesArray> getAllPhrases(Visio.Shapes shapes, bool validationNeeded = true, bool onlyElaboratedPhrases = false)
+        public List<PhrasesArray> getAllPhrases(Visio.Shapes shapes, bool validationNeeded = true, PhrasesMode mode = PhrasesMode.MainMode)
         {
-            if (validationNeeded) return withValidate(shapes, onlyElaboratedPhrases);
-            else return withoutValidate(shapes, onlyElaboratedPhrases);
+            if (validationNeeded) return withValidate(shapes, mode);
+            else return withoutValidate(shapes, mode);
         }
 
-        public List<PhrasesArray> withValidate(Visio.Shapes shapes, bool onlyElaboratedPhrases)
+        private bool additionalCond(Visio.Shape shape, PhrasesMode mode)
+        {
+            bool cond = false;
+            switch (mode)
+            {
+                case PhrasesMode.OnlyElaboratedPhrases:
+                    cond = shape.CellsU["FillForegnd"].Formula == "THEMEGUARD(RGB(146;208;80))";
+                    break;
+
+                case PhrasesMode.OnlyNewBlock:
+                    cond = shape.CellsU["FillForegnd"].Formula == "THEMEGUARD(RGB(0;176;240))";
+                    break;
+
+                default:
+                    cond = true;
+                    break;
+            }
+            return cond;
+        }
+
+        public List<PhrasesArray> withValidate(Visio.Shapes shapes, PhrasesMode mode = PhrasesMode.MainMode)
         {
             List<PhrasesArray> outputPhrase = new List<PhrasesArray>();
 
@@ -28,7 +45,8 @@ namespace _VS_One__Visio
 
             foreach (Visio.Shape shp in shapes)
             {
-                if (shp.NameU.IndexOf("Process") > -1 && (onlyElaboratedPhrases ? shp.CellsU["FillForegnd"].Formula == "THEMEGUARD(RGB(146;208;80))" : true))
+
+                if ((shp.NameU.IndexOf("Process") > -1 || shp.NameU.IndexOf("Procces") > -1) && additionalCond(shp, mode))
                 {
                     string text = getOnlyStringNumber(shp.Text);
                     if (!dict.ContainsKey(text) && text != "А")
@@ -39,7 +57,10 @@ namespace _VS_One__Visio
                 }
             }
 
-            textInShapes.Sort();
+            OwnSorter ownSorter = new OwnSorter();
+
+            //textInShapes.Sort();
+            textInShapes = ownSorter.sort(textInShapes);
 
             foreach (string str in textInShapes)
             {
@@ -80,14 +101,14 @@ namespace _VS_One__Visio
             {
                 foreach (Match match in Regex.Matches(shp.Text, @"\[[^\]]+\]"))
                 {
-                    if(!newList.Contains(match.Value)) newList.Add(match.Value);
+                    if (!newList.Contains(match.Value)) newList.Add(match.Value);
                 }
             }
 
             return newList;
         }
 
-        public List<PhrasesArray> withoutValidate(Visio.Shapes shapes, bool onlyElaboratedPhrases)
+        public List<PhrasesArray> withoutValidate(Visio.Shapes shapes, PhrasesMode mode)
         {
             List<PhrasesArray> outputPhrase = new List<PhrasesArray>();
 
@@ -97,7 +118,7 @@ namespace _VS_One__Visio
 
             foreach (Visio.Shape shp in shapes)
             {
-                if (shp.NameU.IndexOf("Process") > -1 && (onlyElaboratedPhrases ? shp.CellsU["FillForegnd"].Formula == "THEMEGUARD(RGB(146;208;80))" : true))
+                if (shp.NameU.IndexOf("Process") > -1 && additionalCond(shp, mode))
                 {
                     if (!dict.ContainsKey(shp.Text))
                     {
@@ -161,7 +182,7 @@ namespace _VS_One__Visio
             foreach (string line in lines)
             {
                 string stringEnd = (Array.IndexOf(lines, line) == lines.Length - 1) ? "" : "\n";
-                
+
                 string newLine = cleanSurplusSpaces(line);
                 if (Array.IndexOf(lines, line) == 0 && checkNumberContains(line)) newLine = blockNumberParser(line) + " ";
                 returnString += newLine + stringEnd;
@@ -200,7 +221,7 @@ namespace _VS_One__Visio
             string number = "";
 
             Match match = Regex.Match(sourceString, @"(\w*\.\s*)?(\w+)(\s*№\s*)((\d+\.?)+)");
-            if(match.Success)
+            if (match.Success)
             {
                 additional = match.Groups[1].Value;
                 number = match.Groups[4].Value;
@@ -228,6 +249,7 @@ namespace _VS_One__Visio
         public bool checkNumberContains(string sourceString)
         {
             Match match = Regex.Match(sourceString, @"(\w*\.\s*)?(\w+)(\s*№\s*)((\d+\.?)+)");
+            //Match match = Regex.Match(sourceString, @"(\b\w +\b\.?\s*|^)(\bБлок\b)?\s+№\s*(\.?(\d)+)+");
             return match.Success;
         }
 
@@ -425,6 +447,13 @@ namespace _VS_One__Visio
             return returnArray;
         }
         //СТАРЫЙ КОД!!!
+    }
+
+    public enum PhrasesMode
+    {
+        MainMode,
+        OnlyNewBlock,
+        OnlyElaboratedPhrases
     }
 
     //Класс для хранения информации о фразах

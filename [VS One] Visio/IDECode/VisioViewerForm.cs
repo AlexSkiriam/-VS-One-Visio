@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Office.Interop;
-using Visio = Microsoft.Office.Interop.Visio;
 
 namespace _VS_One__Visio
 {
@@ -29,6 +22,20 @@ namespace _VS_One__Visio
         Dictionary<string, int> meta = new Dictionary<string, int>();
         Dictionary<string, int> textMeta = new Dictionary<string, int>();
 
+        private List<string> _statesInScript = new List<string>();
+        public List<string> statesInScript
+        {
+            get
+            {
+                return _statesInScript;
+            }
+            set
+            {
+                _statesInScript = value;
+                BuildAutocompleteMenu();
+            }
+        }
+
         Aspose.Diagram.Diagram currentDiagram;
 
         public static string selectedPhrase { get; set; }
@@ -37,6 +44,7 @@ namespace _VS_One__Visio
         private bool resizing = false;
 
         public TextEditorForm textEditor = null;
+        NewPhrasesFomAss phrasesContainer;
 
         public VisioViewerForm(string path)
         {
@@ -54,7 +62,30 @@ namespace _VS_One__Visio
             scintilla1.InsertCheck += Scintilla1_InsertCheck;
             scintilla1.CharAdded += Scintilla1_CharAdded;
             scintilla1.KeyPress += Scintilla1_KeyPress;
+            scintilla1.KeyDown += Scintilla1_KeyDown;
             scintilla1.UpdateUI += Scintilla1_UpdateUI;
+
+            textBox1.TextChanged += textBox1_TextChanged;
+
+            phrasesContainer = getPhrasesFromAss();
+
+            tabPage2.Controls.Add(phrasesContainer);
+            phrasesContainer.Show();
+
+            autocompleteMenu1.TargetControlWrapper = new ScintillaWrapper(scintilla1);
+            BuildAutocompleteMenu();
+        }
+
+        private void BuildAutocompleteMenu()
+        {
+            autocompleteMenu1.SetAutocompleteItems(statesInScript);
+            autocompleteMenu1.AllowsTabKey = true;
+        }
+
+        private void Scintilla1_KeyDown(object sender, KeyEventArgs e)
+        {
+            LanguageClass language = new LanguageClass();
+            if (e.Control && e.KeyCode == Keys.P) language.SelectedTextLanguageSwitcher(scintilla1);
         }
 
         private ContextMenuStrip getContextMenu()
@@ -62,7 +93,10 @@ namespace _VS_One__Visio
             ContextMenuStrip menu = new ContextMenuStrip();
 
             menu.Items.Add("Создать стейты с условием");
-            menu.Items[0].Click += delegate (object sender2, EventArgs e2) { createCondition(); };
+            menu.Items[0].Click += delegate (object sender2, EventArgs e2) { menuFunc(MenuMode.CreateCond); };
+
+            menu.Items.Add("Перейти к стейту");
+            menu.Items[1].Click += delegate (object sender2, EventArgs e2) { menuFunc(MenuMode.GoTo); };
 
             return menu;
         }
@@ -88,19 +122,31 @@ namespace _VS_One__Visio
 
         private void AxViewer1_OnSelectionChanged(object sender, AxVisioViewer._IViewerEvents_OnSelectionChangedEvent e)
         {
-            if(axViewer1.SelectedShapeIndex > 0 && axViewer1.Focused)
+            if (axViewer1.SelectedShapeIndex > 0 && axViewer1.Focused)
             {
                 int shapeID = axViewer1.get_ShapeIndexToID(axViewer1.SelectedShapeIndex);
                 Aspose.Diagram.Shape curentShape = getShapeFormId(shapeID);
-                tryAddInMeta(textWithoutTag(curentShape.Text.Value.Text));
-                if (meta.ContainsKey(textWithoutTag(curentShape.Text.Value.Text)) && textEditor != null)
-                    textEditor.scintilla1.Lines[meta[textWithoutTag(curentShape.Text.Value.Text)]].Goto();
+                string text = textWithoutTag(curentShape.Text.Value.Text);
+                tryAddInMeta(text);
+                richTextBox1.Text = text;
                 axViewer1.ContextMenuStrip = getContextMenu();
                 axViewer1.ContextMenuStrip.Show(axViewer1.PointToClient(Cursor.Position));
             }
         }
 
-        private void createCondition()
+        private void goToScintillaLine(string sourceString)
+        {
+            if (meta.ContainsKey(sourceString) && textEditor != null)
+            {
+                var linesOnScreen = textEditor.scintilla1.LinesOnScreen - 2;
+
+                var start = textEditor.scintilla1.Lines[meta[sourceString] - (linesOnScreen / 2)].Position;
+                var end = textEditor.scintilla1.Lines[meta[sourceString] + (linesOnScreen / 2)].Position;
+                textEditor.scintilla1.ScrollRange(start, end);
+            }
+        }
+
+        private void menuFunc(MenuMode mode)
         {
             if (axViewer1.SelectedShapeIndex >= 0)
             {
@@ -110,11 +156,18 @@ namespace _VS_One__Visio
                 if (curentShape != null)
                 {
                     string text = textWithoutTag(curentShape.Text.Value.Text);
-                    if (meta.ContainsKey(text) && textEditor != null) textEditor.scintilla1.Lines[meta[text]].Goto();
-                    richTextBox1.Text = text;
-                    List<string> list = phrasesFunctions.additionalPharsesList(text);
-                    if (list.Count > 0) scintilla1.Text = usingText.defaultStateText("", "", "", "", list[0], list[1], "", "");
-                    else scintilla1.Text = "";
+                    switch (mode)
+                    {
+                        case MenuMode.GoTo:
+                            goToScintillaLine(text);
+                            break;
+
+                        case MenuMode.CreateCond:
+                            List<string> list = phrasesFunctions.additionalPharsesList(text);
+                            if (list.Count > 0) scintilla1.Text = usingText.defaultStateText("", "", "", "", list[0], list[1], "", "");
+                            else scintilla1.Text = "";
+                            break;
+                    }
                 }
             }
         }
@@ -227,6 +280,8 @@ namespace _VS_One__Visio
             }
         }
 
+        private TreeView sourceTree = new TreeView();
+
         private void setTreeView()
         {
             Dictionary<string, List<string>> dict = new Dictionary<string, List<string>>();
@@ -254,14 +309,14 @@ namespace _VS_One__Visio
 
             List<string> newList = new List<string>();
 
-            foreach(var elem in dict)
+            foreach (var elem in dict)
             {
                 newList.Add(elem.Key);
             }
 
             newList.Sort();
 
-            for(int i = 0; i <= newList.Count; i++)
+            for (int i = 0; i < newList.Count; i++)
             {
                 treeView1.Nodes[0].Nodes.Add(newList[i]);
                 foreach (string str in dict[newList[i]])
@@ -272,6 +327,7 @@ namespace _VS_One__Visio
 
             treeView1.Sort();
             treeView1.Nodes[0].Expand();
+            sourceTree = treeView1;
         }
 
         private void tryAddInMeta(string shapetext)
@@ -282,7 +338,8 @@ namespace _VS_One__Visio
             findText = Regex.Replace(findText, @"^\s+", "");
             if (textEditor != null)
             {
-                int currentPosition = findWithLevinstain(findText);
+                LevinsteinDistanceClass levinstein = new LevinsteinDistanceClass();
+                int currentPosition = levinstein.findWithLevinstainInTextMeta(findText, textMeta);
                 if (currentPosition > 0)
                 {
                     int line = textEditor.scintilla1.LineFromPosition(currentPosition);
@@ -297,58 +354,8 @@ namespace _VS_One__Visio
             textMeta.Clear();
             foreach (Match match in Regex.Matches(textEditor.scintilla1.Text, @"""text""\s*:\s*""([^""]+)"""))
             {
-                if(!textMeta.ContainsKey(match.Groups[1].Value)) textMeta.Add(match.Groups[1].Value, match.Index);
+                if (!textMeta.ContainsKey(match.Groups[1].Value)) textMeta.Add(match.Groups[1].Value, match.Index);
             }
-        }
-
-        private int findWithLevinstain(string source)
-        {
-            Dictionary<int, int> postions = new Dictionary<int, int>();
-            foreach(KeyValuePair<string, int> keyValue in textMeta)
-            {
-                if(!postions.ContainsKey(keyValue.Value)) postions.Add(keyValue.Value, LevenshteinDistance(source, keyValue.Key));
-            }
-            var keyOfMinValue = postions.Aggregate((x, y) => x.Value < y.Value ? x : y).Key;
-            return keyOfMinValue;
-        }
-
-        public int LevenshteinDistance(string source, string target)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                if (string.IsNullOrEmpty(target)) return 0;
-                return target.Length;
-            }
-            if (string.IsNullOrEmpty(target)) return source.Length;
-
-            if (source.Length > target.Length)
-            {
-                var temp = target;
-                target = source;
-                source = temp;
-            }
-
-            var m = target.Length;
-            var n = source.Length;
-            var distance = new int[2, m + 1];
-            for (var j = 1; j <= m; j++) distance[0, j] = j;
-
-            var currentRow = 0;
-            for (var i = 1; i <= n; ++i)
-            {
-                currentRow = i & 1;
-                distance[currentRow, 0] = i;
-                var previousRow = currentRow ^ 1;
-                for (var j = 1; j <= m; j++)
-                {
-                    var cost = (target[j - 1] == source[i - 1] ? 0 : 1);
-                    distance[currentRow, j] = Math.Min(Math.Min(
-                                distance[previousRow, j] + 1,
-                                distance[currentRow, j - 1] + 1),
-                                distance[previousRow, j - 1] + cost);
-                }
-            }
-            return distance[currentRow, m];
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -380,12 +387,68 @@ namespace _VS_One__Visio
                     {
                         axViewer1.SelectShape(axViewer1.get_ShapeIDToIndex(Convert.ToInt32(shp.ID)));
                         tryAddInMeta(treeView1.SelectedNode.Text);
-                        if (meta.ContainsKey(treeView1.SelectedNode.Text) && textEditor != null)
-                            textEditor.scintilla1.Lines[meta[treeView1.SelectedNode.Text]].Goto();
+                        goToScintillaLine(treeView1.SelectedNode.Text);
                         break;
                     }
                 }
-            }   
+            }
         }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            if (!String.IsNullOrEmpty(textBox1.Text))
+            {
+                FindRecursive(treeView1.Nodes[0], textBox1.Text, false);
+            }
+            else
+            {
+                clearRecursive(treeView1.Nodes[0]);
+            }
+        }
+
+        private void FindRecursive(TreeNode treeNode, string searchString, Boolean foundFirst)
+        {
+            Boolean found = foundFirst;
+
+            foreach (TreeNode tn in treeNode.Nodes)
+            {
+                tn.BackColor = Color.White;
+                if (tn.Text.ToLower().Contains(searchString.ToLower()) && (!found))
+                {
+                    found = true;
+                    tn.BackColor = Color.LightGreen;
+                    treeView1.SelectedNode = tn;
+                }
+                FindRecursive(tn, searchString, found);
+            }
+        }
+
+        public void clearRecursive(TreeNode treeNode)
+        {
+            foreach (TreeNode node in treeNode.Nodes)
+            {
+                node.Collapse();
+                node.BackColor = Color.White;
+                clearRecursive(node);
+            }
+        }
+
+        private NewPhrasesFomAss getPhrasesFromAss()
+        {
+            NewPhrasesFomAss script = new NewPhrasesFomAss(this);
+
+            script.TopLevel = false;
+            script.FormBorderStyle = FormBorderStyle.None;
+            script.AutoScaleMode = AutoScaleMode.Dpi;
+            script.Dock = DockStyle.Fill;
+
+            return script;
+        }
+    }
+
+    public enum MenuMode
+    {
+        GoTo,
+        CreateCond
     }
 }

@@ -5,5 +5,139 @@
     <Setting Name="DarkTheme" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="UseDocument" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="ToolTipTime" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1000</Value>
+    </Setting>
+    <Setting Name="UseHighLight" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="HightLightColor" Type="System.Drawing.Color" Scope="User">
+      <Value Profile="(Default)">MistyRose</Value>
+    </Setting>
+    <Setting Name="IncludeStartText" Type="System.String" Scope="User">
+      <Value Profile="(Default)">{
+    "block_settings": {
+        "speech_state_default_settings": {
+            "allow_interruption_with_dtmf": false,
+            "interrupt_phrases_total_length_chars": 20, /*Минимальное количество символов в сумме фраз для прерывания*/
+            "interrupt_state": null,
+            "interrupt_ignore_phrases_exact": [
+                "[ага угу да ну здравствуйте а хорошо]+"
+            ]
+        },
+        "listening_state_default_settings": {
+            "silence_length_seconds": 4.0,  /*Интервал тишины (c)*/
+            "noise_length_seconds": 15.0,   /*Интервал тишины/шума (c)*/
+            "long_silence_state": null,
+            "long_noise_state": null,
+
+            "max_incomprehensible_phrases": 5, /*Количество непонятных фраз*/
+            "max_incomprehensible_total_length_chars": 40, /*Длина непонятных фраз (символов)*/
+            "incomprehensible_state": null,
+
+            "undecoded_silence_threshold_seconds": 0.9, /*Порог тишины от распознавания (с)*/
+            "abonent_phrase_start_after_robot_speaking_end_offset_seconds": 0.0, /*Отступ слушания от окончания речи (с)*/ 
+        },
+        "initial_state": "init",
+    },
+    "types": {},
+    "objects": {
+        "store": {
+        },
+        "parameters": {
+            "abonent_timezone_delta": "int"
+        }
+    },    
+    "enums": {
+        "Result": {
+            "not_dial":     "Недозвон",
+            "disconnect":   "Конец разговора",
+        }
+    },
+    "tts_phrases": {},           
+    "phrases":  {
+    },
+    "special_states": [
+        {
+            "name": "init",
+            "settings": { "long_silence_state": "init", "long_noise_state": "init" },
+            "phrases_conditions": [
+                {
+                    "any_phrase": {},
+                    "next_state": "init"
+                }
+            ]
+        },
+        {
+            "name": "terminated",
+            "conditions": [
+                {
+                    "dialog.result_set": true,
+                    "next_state": "end",
+                },
+                {
+                    "dialog.visited_state": { "start" : false },
+                    "next_state": {
+                        "name": "not_dial",
+                        "type_result": "not_dial",
+                        "next_state": "end"
+                    }
+                },
+                {
+                    "always_true": {},
+                    "next_state": {
+                        "name": "disconnect",
+                        "type_result": "disconnect",
+                        "next_state": "end"
+                    }
+                }
+            ]
+        },
+    ],
+    "global_listening_states": [
+    ],
+    "on_timer_states": [
+        {
+            "name": "global_time_stop",
+            "when": {                   
+                "dialog.call_time": { "ge": 300.0 }
+            },
+            "next_state": {
+                "name": "check_result_global_time_stop",
+                "conditions": [
+                    {
+                        "dialog.result_set": false,
+                        "next_state": {
+                            "name": "global_time_stop_fix_result",
+                            "type_result": "disconnect",
+                            "next_state": "end"
+                        }
+                    },
+                    {
+                        "always_true": {},
+                        "next_state": "end"
+                    }
+                ],
+            },          
+        },
+    ],
+    "states": [
+        {
+            "name": "start",
+            "type_result": "disconnect",
+            "next_state": "end"
+        }
+    ],
+}</Value>
+    </Setting>
+    <Setting Name="NeedValidateStates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="UseRedactorDarkTheme" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

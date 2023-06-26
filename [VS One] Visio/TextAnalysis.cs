@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Visio = Microsoft.Office.Interop.Visio;
-using Excel = Microsoft.Office.Interop.Excel;
 
 namespace _VS_One__Visio
 {
@@ -13,7 +8,7 @@ namespace _VS_One__Visio
     {
         PhrasesFunctions functions = new PhrasesFunctions();
 
-        public int phrasesCount(Visio.Shapes allShapes) 
+        public int phrasesCount(Visio.Shapes allShapes)
         {
             int counter = 0;
             foreach (Visio.Shape shape in allShapes)

@@ -34,5 +34,136 @@ namespace _VS_One__Visio.Properties {
                 this["DarkTheme"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseDocument {
+            get {
+                return ((bool)(this["UseDocument"]));
+            }
+            set {
+                this["UseDocument"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int ToolTipTime {
+            get {
+                return ((int)(this["ToolTipTime"]));
+            }
+            set {
+                this["ToolTipTime"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseHighLight {
+            get {
+                return ((bool)(this["UseHighLight"]));
+            }
+            set {
+                this["UseHighLight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("MistyRose")]
+        public global::System.Drawing.Color HightLightColor {
+            get {
+                return ((global::System.Drawing.Color)(this["HightLightColor"]));
+            }
+            set {
+                this["HightLightColor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("{\r\n    \"block_settings\": {\r\n        \"speech_state_default_settings\": {\r\n         " +
+            "   \"allow_interruption_with_dtmf\": false,\r\n            \"interrupt_phrases_total_" +
+            "length_chars\": 20, /*Минимальное количество символов в сумме фраз для прерывания" +
+            "*/\r\n            \"interrupt_state\": null,\r\n            \"interrupt_ignore_phrases_" +
+            "exact\": [\r\n                \"[ага угу да ну здравствуйте а хорошо]+\"\r\n           " +
+            " ]\r\n        },\r\n        \"listening_state_default_settings\": {\r\n            \"sile" +
+            "nce_length_seconds\": 4.0,  /*Интервал тишины (c)*/\r\n            \"noise_length_se" +
+            "conds\": 15.0,   /*Интервал тишины/шума (c)*/\r\n            \"long_silence_state\": " +
+            "null,\r\n            \"long_noise_state\": null,\r\n\r\n            \"max_incomprehensibl" +
+            "e_phrases\": 5, /*Количество непонятных фраз*/\r\n            \"max_incomprehensible" +
+            "_total_length_chars\": 40, /*Длина непонятных фраз (символов)*/\r\n            \"inc" +
+            "omprehensible_state\": null,\r\n\r\n            \"undecoded_silence_threshold_seconds\"" +
+            ": 0.9, /*Порог тишины от распознавания (с)*/\r\n            \"abonent_phrase_start_" +
+            "after_robot_speaking_end_offset_seconds\": 0.0, /*Отступ слушания от окончания ре" +
+            "чи (с)*/ \r\n        },\r\n        \"initial_state\": \"init\",\r\n    },\r\n    \"types\": {}" +
+            ",\r\n    \"objects\": {\r\n        \"store\": {\r\n        },\r\n        \"parameters\": {\r\n  " +
+            "          \"abonent_timezone_delta\": \"int\"\r\n        }\r\n    },    \r\n    \"enums\": {" +
+            "\r\n        \"Result\": {\r\n            \"not_dial\":     \"Недозвон\",\r\n            \"dis" +
+            "connect\":   \"Конец разговора\",\r\n        }\r\n    },\r\n    \"tts_phrases\": {},       " +
+            "    \r\n    \"phrases\":  {\r\n    },\r\n    \"special_states\": [\r\n        {\r\n           " +
+            " \"name\": \"init\",\r\n            \"settings\": { \"long_silence_state\": \"init\", \"long_" +
+            "noise_state\": \"init\" },\r\n            \"phrases_conditions\": [\r\n                {\r" +
+            "\n                    \"any_phrase\": {},\r\n                    \"next_state\": \"init\"" +
+            "\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"name\": \"" +
+            "terminated\",\r\n            \"conditions\": [\r\n                {\r\n                  " +
+            "  \"dialog.result_set\": true,\r\n                    \"next_state\": \"end\",\r\n        " +
+            "        },\r\n                {\r\n                    \"dialog.visited_state\": { \"st" +
+            "art\" : false },\r\n                    \"next_state\": {\r\n                        \"n" +
+            "ame\": \"not_dial\",\r\n                        \"type_result\": \"not_dial\",\r\n         " +
+            "               \"next_state\": \"end\"\r\n                    }\r\n                },\r\n " +
+            "               {\r\n                    \"always_true\": {},\r\n                    \"n" +
+            "ext_state\": {\r\n                        \"name\": \"disconnect\",\r\n                  " +
+            "      \"type_result\": \"disconnect\",\r\n                        \"next_state\": \"end\"\r" +
+            "\n                    }\r\n                }\r\n            ]\r\n        },\r\n    ],\r\n  " +
+            "  \"global_listening_states\": [\r\n    ],\r\n    \"on_timer_states\": [\r\n        {\r\n   " +
+            "         \"name\": \"global_time_stop\",\r\n            \"when\": {                   \r\n" +
+            "                \"dialog.call_time\": { \"ge\": 300.0 }\r\n            },\r\n           " +
+            " \"next_state\": {\r\n                \"name\": \"check_result_global_time_stop\",\r\n    " +
+            "            \"conditions\": [\r\n                    {\r\n                        \"dia" +
+            "log.result_set\": false,\r\n                        \"next_state\": {\r\n              " +
+            "              \"name\": \"global_time_stop_fix_result\",\r\n                          " +
+            "  \"type_result\": \"disconnect\",\r\n                            \"next_state\": \"end\"\r" +
+            "\n                        }\r\n                    },\r\n                    {\r\n     " +
+            "                   \"always_true\": {},\r\n                        \"next_state\": \"en" +
+            "d\"\r\n                    }\r\n                ],\r\n            },          \r\n       " +
+            " },\r\n    ],\r\n    \"states\": [\r\n        {\r\n            \"name\": \"start\",\r\n         " +
+            "   \"type_result\": \"disconnect\",\r\n            \"next_state\": \"end\"\r\n        }\r\n   " +
+            " ],\r\n}")]
+        public string IncludeStartText {
+            get {
+                return ((string)(this["IncludeStartText"]));
+            }
+            set {
+                this["IncludeStartText"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool NeedValidateStates {
+            get {
+                return ((bool)(this["NeedValidateStates"]));
+            }
+            set {
+                this["NeedValidateStates"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseRedactorDarkTheme {
+            get {
+                return ((bool)(this["UseRedactorDarkTheme"]));
+            }
+            set {
+                this["UseRedactorDarkTheme"] = value;
+            }
+        }
     }
 }
